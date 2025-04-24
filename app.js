@@ -23,7 +23,9 @@ function draw(context) {
 
     drawSun(context);
     drawMountains(context);
+    drawGrid(context);
     drawHaze(context);
+    drawSunGlare(context);
 }
 
 function drawSun(context) {
@@ -48,9 +50,12 @@ function drawMountains(context) {
     const yOffset = baseMountainHeight;
 
     const mountains = [
-        { fillStyle: '#551155', mountainHeight: baseMountainHeight },
-        { fillStyle: '#661166', mountainHeight: baseMountainHeight / 2 },
-        { fillStyle: '#771177', mountainHeight: baseMountainHeight / 4 }
+        // { fillStyle: '#551155', mountainHeight: baseMountainHeight },
+        // { fillStyle: '#661166', mountainHeight: baseMountainHeight / 2 },
+        // { fillStyle: '#771177', mountainHeight: baseMountainHeight / 4 }
+        { fillStyle: '#331133', mountainHeight: baseMountainHeight },
+        { fillStyle: '#441144', mountainHeight: baseMountainHeight / 2 },
+        { fillStyle: '#551155', mountainHeight: baseMountainHeight / 4 }
     ];
 
     const savedShadowColor = context.shadowColor;
@@ -61,10 +66,6 @@ function drawMountains(context) {
         const minY = context.canvas.height / 4;            // Top
 
         const points = generateMountains(context, m.mountainHeight, minY, maxY, yOffset);
-            // .map(p => ({
-            //     x: p.x,
-            //     y: Math.max(Math.min(p.y - heightOffset, context.canvas.height - heightOffset), context.canvas.height / 4)
-            // }));
 
         context.beginPath()
         context.moveTo(points[0].x, points[0].y);
@@ -93,7 +94,6 @@ function generateMountains(context, mountainHeight, minY, maxY, yOffset) {
     const points = [];
     for (let x = 0; x <= context.canvas.width + 1 ; x += step) {
         h += hStep * (Math.random() - 0.5);
-        //let y = h;
         if (h > maxY)
             h = maxY;
         if (h < minY)
@@ -116,4 +116,61 @@ function drawHaze(context) {
     context.fillStyle = gradient;
     context.arc(x, y, radius, 0, Math.PI*2);
     context.fill();
+}
+
+function drawSunGlare(context) {
+    const radius = Math.min(context.canvas.height, context.canvas.width) / 2;
+    const x = context.canvas.width / 2;
+    const y = context.canvas.height / 4;
+
+    const gradient = context.createRadialGradient(x, y, radius * 0.2, x, y, radius);
+    gradient.addColorStop(0, "rgba(170, 68, 170, 0.2)");
+    gradient.addColorStop(1, "rgba(170, 68, 170, 0.005)");
+
+    context.beginPath();
+    context.fillStyle = gradient;
+    context.arc(x, y, radius, 0, Math.PI*2);
+    context.fill();
+}
+
+function drawGrid(context) {
+    const horizonY = context.canvas.height - (context.canvas.height / 3);
+    
+    context.strokeStyle = "#A4A";
+
+    // Horizontal lines
+    let step = (context.canvas.height - horizonY) / 9;
+    for (let y = context.canvas.height; y >= horizonY; y -= step) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(context.canvas.width, y)
+        context.stroke();
+        step = Math.max(step*0.91, 2);
+    }
+
+
+    // Vertial/diagonal lines
+    const midPoint = context.canvas.width / 2;
+    const numberOfSteps = 81;
+    const horizonStep = context.canvas.width / numberOfSteps;
+    const viewerStep = horizonStep * 6;
+    const viewerY = context.canvas.height;
+    //left side
+    for (let n = 0; n < (numberOfSteps-1)/2; n++) {
+        let horizonX = midPoint - n*horizonStep
+        let viewerX = midPoint - n*viewerStep
+        context.beginPath();
+        context.moveTo(horizonX, horizonY+2);
+        context.lineTo(viewerX, viewerY);
+        context.stroke();
+    }
+    //right side
+    for (let n = 0; n < (numberOfSteps-1)/2; n++) {
+        let horizonX = midPoint + n*horizonStep
+        let viewerX = midPoint + n*viewerStep
+        context.beginPath();
+        context.moveTo(horizonX, horizonY+2);
+        context.lineTo(viewerX, viewerY);
+        context.stroke();
+    }
 }
